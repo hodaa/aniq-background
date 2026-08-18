@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aniq-cron-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-18",
+  "triggers": {
+    "crons": [
+      "*/5 * * * *",
+      "*/15 * * * *",
+      "0 0 * * *"
+    ]
+  },
+  "vars": {
+    "BACKEND_URL": "https://your-backend.vercel.app"
+  }
+}
