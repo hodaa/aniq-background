@@ -10,6 +10,10 @@
       "0 0 * * *"
     ]
   },
+  "vars": {
+    "BACKEND_URL": "https://backend-nine-bay-22.vercel.app",
+    "CRON_SECRET": "beabe46ec8c565175c352b14337cf26da43aa24fd38cd7fa7f40d9c21430e304"
+  },
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,
