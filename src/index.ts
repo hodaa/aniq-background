@@ -8,7 +8,8 @@ type JobName =
   | "shipping-compensation"
   | "expired-confirmation-release"
   | "order-cancellation"
-  | "product-review";
+  | "product-review"
+  | "expired-payment-reservations";
 
 const JOBS: Record<JobName, string> = {
   "paymob-reconciliation": "/api/v1/internal/cron/paymob-reconciliation",
@@ -16,12 +17,13 @@ const JOBS: Record<JobName, string> = {
   "expired-confirmation-release": "/api/v1/internal/cron/expired-confirmation-release",
   "order-cancellation": "/api/v1/internal/cron/order-cancellation",
   "product-review": "/api/v1/internal/cron/product-review",
+  "expired-payment-reservations":"/api/v1/internal/cron/expired-payment-reservations"
 };
 
 function jobsForCron(cron: string): JobName[] {
   switch (cron) {
     case "*/5 * * * *":
-      return ["paymob-reconciliation", "shipping-compensation", "product-review"];
+      return ["paymob-reconciliation", "shipping-compensation", "product-review", "expired-payment-reservations"];
     case "*/15 * * * *":
       return ["expired-confirmation-release"];
     case "0 0 * * *":
