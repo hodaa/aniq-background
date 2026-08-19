@@ -33,22 +33,48 @@ function jobsForCron(cron: string): JobName[] {
   }
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function safeEndpoint(url: string): string {
+  const parsed = new URL(url);
+  return `${parsed.origin}${parsed.pathname}`;
+}
+
 async function runJob(job: JobName, env: Env): Promise<void> {
   const url = new URL(JOBS[job], env.BACKEND_URL).toString();
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${env.CRON_SECRET}`,
-      Accept: "application/json",
-    },
-  });
+  const endpoint = safeEndpoint(url);
+  console.log(JSON.stringify({ event: "cron.job.started", job, endpoint }));
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`${job} failed with ${response.status}: ${body.slice(0, 500)}`);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${env.CRON_SECRET}`,
+        Accept: "application/json"
+      }
+    });
+  } catch (error) {
+    const message = errorMessage(error);
+    console.error(JSON.stringify({ event: "cron.job.network_error", job, endpoint, message }));
+    throw new Error(`${job} network request failed: ${message}`);
   }
 
-  console.log(JSON.stringify({ job, status: response.status, ok: true }));
+  if (!response.ok) {
+    const responseBody = (await response.text()).slice(0, 500);
+    console.error(JSON.stringify({
+      event: "cron.job.http_error",
+      job,
+      endpoint,
+      status: response.status,
+      responseBody
+    }));
+    throw new Error(`${job} failed with HTTP ${response.status}`);
+  }
+
+  console.log(JSON.stringify({ event: "cron.job.succeeded", job, endpoint, status: response.status }));
 }
 
 export default {
@@ -70,8 +96,14 @@ export default {
       (result): result is PromiseRejectedResult => result.status === "rejected",
     );
 
-    for (const failure of failures) {
-      console.error(failure.reason);
+    for (const [index, result] of results.entries()) {
+      if (result.status === "rejected") {
+        console.error(JSON.stringify({
+          event: "cron.job.failed",
+          job: jobs[index],
+          message: errorMessage(result.reason)
+        }));
+      }
     }
 
     if (failures.length > 0) {

@@ -10,9 +10,6 @@
       "0 0 * * *"
     ]
   },
-  "vars": {
-    "BACKEND_URL": "https://your-backend.vercel.app"
-  },
   "observability": {
     "enabled": false
   }
