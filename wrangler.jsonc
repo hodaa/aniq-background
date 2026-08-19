@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "aniq-cron-worker",
+  "name": "aniq-background",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-18",
   "triggers": {
